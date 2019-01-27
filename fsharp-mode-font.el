@@ -178,6 +178,10 @@ with initial value INITVALUE and optional DOCSTRING."
   "\\s-+\\(|\\)[A-Za-z0-9_' ]"
   "Match literal | in contexts like match and type declarations.")
 
+(def-fsharp-compiled-var fsharp-operator-misc-regexp
+  "->\\|<>\\|&&\\|\\s-||\\s-\\|\\s->>"
+  "Match operators like ->, <>, &&, ||")
+
 (defvar fsharp-imenu-generic-expression
   `((nil                 ,(concat "^\\s-*" fsharp-function-def-regexp) 1)
     (nil                 ,(concat "^\\s-*" fsharp-pattern-function-regexp) 1)
@@ -294,9 +298,9 @@ with initial value INITVALUE and optional DOCSTRING."
       (,fsharp-type-def-regexp 1 font-lock-type-face)
       (,fsharp-function-def-regexp 1 font-lock-function-name-face)
       (,fsharp-pattern-function-regexp 1 font-lock-function-name-face)
-      ;; Active records
+      ;; Active patterns
       ("(|" (0 'fsharp-ui-operator-face)
-       ("\\([A-Za-z'_]+\\)\\(|)\\)" nil nil
+       ("\\([A-Za-z'_]+\\)\\(|)?\\)" nil nil
         (1 font-lock-function-name-face)
         (2 'fsharp-ui-operator-face)))
       (,fsharp-operator-pipe-regexp . 'fsharp-ui-operator-face)
@@ -306,6 +310,7 @@ with initial value INITVALUE and optional DOCSTRING."
       (,fsharp-operator-case-regexp 1 'fsharp-ui-operator-face)
       (,fsharp-operator-quote-regexp  (1 'fsharp-ui-operator-face)
                                       (2 'fsharp-ui-operator-face))
+      (,fsharp-operator-misc-regexp . 'fsharp-ui-operator-face)
       ("[^:]:\\s-*\\(\\<[A-Za-z0-9_' ]*[^ ;\n,)}=<-]\\)\\(<[^>]*>\\)?"
        (1 font-lock-type-face)
        ;; 'prevent generic type arguments from being rendered in variable face
