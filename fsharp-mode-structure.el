@@ -671,7 +671,7 @@ This function is normally bound to `indent-line-function' so
           (goto-char open-bracket-pos)
           (setq placeholder (point))
           (fsharp-goto-initial-line)
-          (fsharp-goto-beginning-of-tqs
+          (fsharp-goto-opening-delimiter
            (save-excursion (nth 3 (parse-partial-sexp
                                    placeholder (point)))))
           (+ (current-indentation) fsharp-indent-offset))))))
@@ -755,13 +755,13 @@ lines (if any)"
       ;; if we landed inside a string, go to the beginning of that
       ;; string. this handles triple quoted, multi-line spanning
       ;; strings.
-      (fsharp-goto-beginning-of-tqs (nth 3 (parse-partial-sexp bod (point))))
+      (fsharp-goto-opening-delimiter (nth 3 (parse-partial-sexp bod (point))))
       ;; now skip backward over continued lines
       (setq placeholder (point))
       (fsharp-goto-initial-line)
       ;; we may *now* have landed in a TQS, so find the beginning of
       ;; this string.
-      (fsharp-goto-beginning-of-tqs
+      (fsharp-goto-opening-delimiter
        (save-excursion (nth 3 (parse-partial-sexp
                                placeholder (point)))))
       ;; Okay. We have three basic cases:
@@ -1341,14 +1341,10 @@ implicitly also registers [||], though the pipes are ignored."
       (car (cdr status)))))             ; char of open bracket
 
 
-;; NOTE[gastove|2019-10-25] this function baffles me. A triple-quoted string is,
-;; definitionally, always delimited by *triple quotes*. I suspect this function
-;; of being something more akin to, "go to beginning of opening of pair", or
-;; just "go to delimiter."
-(defun fsharp-goto-beginning-of-tqs (delim)
-  "Go to the beginning of the triple quoted string we find ourselves in.
-DELIM is the TQS string delimiter character we're searching backwards
-for."
+(defun fsharp-goto-opening-delimiter (delim)
+  "Go to the beginning of a delimited expression -- e.g. a
+string, triple-quoted string, or similar. DELIM is the delimiter
+character we're searching backwards for."
   (let ((skip (and delim (make-string 1 delim)))
         (continue t))
     (when skip
