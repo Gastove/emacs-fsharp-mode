@@ -811,38 +811,41 @@ dedenting."
            (pps (parse-partial-sexp bod (point)))
            (boipps (parse-partial-sexp bod (fsharp-point 'boi)))
            (open-bracket-pos (fsharp-nesting-level)))
-
       (cond
+
+       ;; There are a set of circumstances in which one might write, for
+       ;; instance, a list of functions that need evaluating. Think of Expecto
+       ;; tests, often written like:
+       ;;
+       ;; [<Tests>]
+       ;; let tests =
+       ;;     testList "Serialization Round-Tripping"
+       ;;         [ testCase "Some description" <| fun _ ->
+       ;;               Expecto.equal 1 1
+       ;;           testCase "Other description" <| fun _ ->
+       ;;               Expecto.equal true false ]
+       ;;
+       ;; In this case, `open-bracket-pos' will be true, *but* we want to indent
+       ;; a level deeper than that usually implies. If one were to want to add
+       ;; another assertion after `Expecto.equal 1 1', for instance, we'd want
+       ;; to be at the indent level of the E in Expecto, not of the opening
+       ;; square bracket.
+       ;;
+       ;; Long story short, blocks can appear basically anywhere, so check for
+       ;; that first.
+       ((fsharp--previous-line-opens-block-p)
+        (fsharp--compute-indentation-relative-to-previous honor-block-close-p))
+
        ;; Continuation Lines
        ((fsharp-continuation-line-p)
         (if open-bracket-pos
-            ;; There are a set of circumstances in which one might write, for
-            ;; instance, a list of functions that need evaluating. Think of
-            ;; Expecto tests, often written like:
-            ;; [<Tests>]
-            ;; let tests =
-            ;;     testList "Serialization Round-Tripping"
-            ;;         [ testCase "Some description" <| fun _ ->
-            ;;               Expecto.equal 1 1
-            ;;           testCase "Other description" <| fun _ ->
-            ;;               Expecto.equal true false ]
-            ;;
-            ;; In this case, `open-bracket-pos' will be true, *but* we want to
-            ;; indent a level deeper than that usually implies. If one were to
-            ;; want to add another assertion after `Expecto.equal 1 1', for
-            ;; instance, we'd want to be at the indent level of the E in
-            ;; Expecto, not of the opening square bracket.
-            ;;
-            ;; Thus, we compute both numbers and return the max, letting the
-            ;; programmer tab back a level as needed.
-            (progn
-              ;; (message "Open bracket is %s" (fsharp--compute-indentation-open-bracket open-bracket-pos))
-              ;; (message "Relative to previous is %s" (fsharp--compute-indentation-relative-to-previous honor-block-close-p))
-              ;; (message "Last is %s" (fsharp--get-last-indentation))
-              (max
-               (fsharp--compute-indentation-open-bracket open-bracket-pos)
-               ;; (fsharp--compute-indentation-relative-to-previous honor-block-close-p)
-               (fsharp--get-last-indentation)))
+            ;; When we're in a brace-delimited expression, we will want to
+            ;; line up with either the opening indentation *or* subsequent
+            ;; indentation, whichever is greater.
+            (max
+             (fsharp--compute-indentation-open-bracket open-bracket-pos)
+             (fsharp--get-last-indentation))
+          ;; Otherwise, just compute indentation for the level.
           (fsharp--compute-indentation-continuation-line)))
 
        ;; Previous line is a continuation line, use indentation of previous line
