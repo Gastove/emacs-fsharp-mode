@@ -17,3 +17,6 @@ let aThing (test : Test) = function
     | Unit -> ()
     | Integration -> ()
     | EndToEnd -> ()
+
+type ARecord =
+    { FieldOne: int}

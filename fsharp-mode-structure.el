@@ -159,7 +159,15 @@ as indentation hints, unless the comment character is in column zero."
                              "end"
                              "done"
                              "elif"
-                             "}")
+                             ;; NOTE[gastove|2020-12-20] Closing curly brace has
+                             ;; been here for a while, but I can't fathom *why*.
+                             ;; It's breaking indentation for record
+                             ;; expressions, which is pretty cool! Going to
+                             ;; comment out and leave a note here; if everything
+                             ;; keeps working properly, will remove.
+                             ;;
+                             ;; "}"
+                             )
                            "\\|")
           "\\)")
   "Regular expression matching statements to be dedented one level.")
@@ -253,7 +261,7 @@ to scan."
   "Returns non-nil if the current line should dedent one level."
   (save-excursion
     (progn (back-to-indentation)
-           (looking-at fsharp-outdent-re))
+           (looking-at-p fsharp-outdent-re))
     ))
 
 

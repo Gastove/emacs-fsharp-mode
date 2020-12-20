@@ -277,3 +277,12 @@
      (goto-char 180)
      (expect (fsharp--compute-indentation-relative-to-previous t) :to-be 4)
      (expect (fsharp--compute-indentation-relative-to-previous t) :to-be (fsharp-compute-indentation t)))))
+
+(describe "Indentation is correct within parenthesized expressions ([], {}, (), etc)"
+  :var ((file (concat fsharp-struct-test-files-dir "Relative.fs")))
+  (it "indents correctly in Record expressions with a space after the opening {"
+    (with-current-buffer (find-file-noselect file)
+      (goto-char 334)
+      (fsharp-newline-and-indent)
+      (expect (current-indentation) :to-be 6)
+      (expect (point) :to-be 341))))
